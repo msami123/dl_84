@@ -106,4 +106,5 @@ elif option == "Not Like Eyes Only":
             predicted_class, confidence = classify_fish(probabilities)
 
         # Display prediction
-        st.write(f"### Prediction: **{CLASS_NAMES[pred
+        st.write(f"### Prediction: **{CLASS_NAMES[predicted_class]}**")
+        st.write(f"### Confidence: **{confidence:.2f}%**")
