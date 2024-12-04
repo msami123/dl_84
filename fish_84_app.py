@@ -5,7 +5,7 @@ from torchvision import transforms
 import numpy as np
 
 # Load the trained model
-MODEL_PATH = "fish_0.84model_eyes.pth"  # Update this path to the correct model location
+MODEL_PATH = "fish_86model_eyes_only.pth"  # Update this path to the correct model location
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 model = torch.load(MODEL_PATH, map_location=device)
 model.eval()
