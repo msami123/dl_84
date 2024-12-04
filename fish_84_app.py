@@ -20,6 +20,19 @@ transform = transforms.Compose([
     transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
 ])
 
+# Function to handle classification logic
+def classify_fish(probabilities):
+    highly_fresh_score = probabilities[1]
+    not_fresh_score = probabilities[2]
+    fresh_score = probabilities[0]
+
+    # If confidence scores of "Highly Fresh" and "Not Fresh" are close, classify as "Fresh"
+    if abs(highly_fresh_score - not_fresh_score) < 0.1:  # Threshold for closeness
+        return 0, max(fresh_score, highly_fresh_score, not_fresh_score) * 100
+    else:
+        predicted_class = np.argmax(probabilities)
+        return predicted_class, probabilities[predicted_class] * 100
+
 # Streamlit app title and description
 st.title("Fish Freshness Classification")
 st.write("Upload an image or use your camera to classify the fish's freshness.")
@@ -43,8 +56,7 @@ if option == "Upload an image":
         with torch.no_grad():
             outputs = model(input_tensor)
             probabilities = torch.softmax(outputs, dim=1)[0].cpu().numpy()
-            predicted_class = np.argmax(probabilities)
-            confidence = probabilities[predicted_class] * 100
+            predicted_class, confidence = classify_fish(probabilities)
 
         # Display prediction
         st.write(f"### Prediction: **{CLASS_NAMES[predicted_class]}**")
@@ -71,8 +83,7 @@ elif option == "Use camera":
         with torch.no_grad():
             outputs = model(input_tensor)
             probabilities = torch.softmax(outputs, dim=1)[0].cpu().numpy()
-            predicted_class = np.argmax(probabilities)
-            confidence = probabilities[predicted_class] * 100
+            predicted_class, confidence = classify_fish(probabilities)
 
         # Display prediction
         st.write(f"### Prediction: **{CLASS_NAMES[predicted_class]}**")
