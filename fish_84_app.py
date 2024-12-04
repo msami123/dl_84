@@ -62,11 +62,6 @@ if option == "Upload an image":
         st.write(f"### Prediction: **{CLASS_NAMES[predicted_class]}**")
         st.write(f"### Confidence: **{confidence:.2f}%**")
 
-        # Display probability distribution
-        st.write("### Class Probabilities:")
-        for i, prob in enumerate(probabilities):
-            st.write(f"{CLASS_NAMES[i]}: {prob * 100:.2f}%")
-
 elif option == "Use camera":
     # Camera input
     camera_image = st.camera_input("Take a picture")
@@ -88,8 +83,3 @@ elif option == "Use camera":
         # Display prediction
         st.write(f"### Prediction: **{CLASS_NAMES[predicted_class]}**")
         st.write(f"### Confidence: **{confidence:.2f}%**")
-
-        # Display probability distribution
-        st.write("### Class Probabilities:")
-        for i, prob in enumerate(probabilities):
-            st.write(f"{CLASS_NAMES[i]}: {prob * 100:.2f}%")
