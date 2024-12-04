@@ -11,7 +11,7 @@ model = torch.load(MODEL_PATH, map_location=device)
 model.eval()
 
 # Define class names
-CLASS_NAMES = ["Highly Fresh", "Fresh", "Not Fresh"]
+CLASS_NAMES = ["Fresh", "Highly Fresh", "Not Fresh"]
 
 # Define image transformation
 transform = transforms.Compose([
@@ -22,25 +22,23 @@ transform = transforms.Compose([
 
 # Function to handle classification logic
 def classify_fish(probabilities):
-    # Calculate confidence scores
-    highly_fresh_score = probabilities[0]
-    fresh_score = probabilities[1]
+    highly_fresh_score = probabilities[1]
     not_fresh_score = probabilities[2]
+    fresh_score = probabilities[0]
 
-    # Determine the predicted class and its confidence
-    predicted_class = np.argmax(probabilities)
-    confidence = probabilities[predicted_class] * 100
-    return predicted_class, confidence
+    # If confidence scores of "Highly Fresh" and "Not Fresh" are close, classify as "Fresh"
+    if abs(highly_fresh_score - not_fresh_score) < 0.1:  # Threshold for closeness
+        return 0, max(fresh_score, highly_fresh_score, not_fresh_score) * 100
+    else:
+        predicted_class = np.argmax(probabilities)
+        return predicted_class, probabilities[predicted_class] * 100
 
 # Streamlit app title and description
 st.title("Fish Freshness Classification")
 st.write("Upload an image or use your camera to classify the fish's freshness.")
 
 # Select input method
-option = st.selectbox(
-    "Choose input method:",
-    ["Upload an image", "Use camera", "Not Like Eyes Only"]
-)
+option = st.selectbox("Choose input method:", ["Upload an image", "Use camera"])
 
 if option == "Upload an image":
     # File uploader
@@ -74,29 +72,6 @@ elif option == "Use camera":
 
         # Preprocess the captured image
         image = Image.open(camera_image).convert("RGB")
-        input_tensor = transform(image).unsqueeze(0).to(device)
-
-        # Get model predictions
-        with torch.no_grad():
-            outputs = model(input_tensor)
-            probabilities = torch.softmax(outputs, dim=1)[0].cpu().numpy()
-            predicted_class, confidence = classify_fish(probabilities)
-
-        # Display prediction
-        st.write(f"### Prediction: **{CLASS_NAMES[predicted_class]}**")
-        st.write(f"### Confidence: **{confidence:.2f}%**")
-
-elif option == "Not Like Eyes Only":
-    # Handle custom classification logic for "Not Like Eyes Only"
-    st.write("Please upload a different image not focusing on eyes only.")
-    uploaded_file = st.file_uploader("Upload an image", type=["jpg", "jpeg", "png"])
-    if uploaded_file is not None:
-        # Display uploaded image
-        st.image(uploaded_file, caption="Uploaded Image", use_column_width=True)
-        st.write("Classifying...")
-
-        # Preprocess the image
-        image = Image.open(uploaded_file).convert("RGB")
         input_tensor = transform(image).unsqueeze(0).to(device)
 
         # Get model predictions
